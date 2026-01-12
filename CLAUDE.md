@@ -1,5 +1,14 @@
 # Claude Code Guidelines
 
+Always follow these guidelines strictly and without exception. Before completing any task, verify that all changes adhere to these rules.
+
+## README Format
+
+- The title should be the exact repository name in lowercase kebab-case
+- The first sentence of the description must exactly match the GitHub repository description
+- Additional details can follow the description (usage examples, etc.)
+- Avoid using colons in prose (use "..." or rephrase instead)
+
 ## Commits
 
 - Always break commits down into logical parts
