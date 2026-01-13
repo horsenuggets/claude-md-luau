@@ -18,7 +18,7 @@ Always follow these guidelines strictly and without exception. Before completing
 - Run `stylua .` often to ensure that code is formatted properly
 - Every file should end in a single newline
 - Text should be LF normalized
-- Prefer Luau string interpolation using backticks, like `` `Here is a string with an interpolated {value}.` ``
+- Prefer string interpolation using backticks over the `..` concatenation operator, like `` `Here is a string with an interpolated {value}.` ``
 - Prefer double quotes over single quotes
 - Always read through existing code to match style
 
