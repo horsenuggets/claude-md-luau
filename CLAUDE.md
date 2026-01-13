@@ -125,6 +125,11 @@ overrides the above rules:
 - Surround strings of interest in quotation marks `"`
 - Use `[Usage]` instead of `Usage:` for usage messages
 
+## Configuration Files
+
+In `rokit.toml` and `wally.toml`, repository names using the `username/project` format should
+always be lowercase (e.g., `horsenuggets/testable`, not `HorseNuggets/Testable`).
+
 ## Versioning
 
 - Version tags should NOT have a "v" prefix (use `0.0.1`, not `v0.0.1`)
