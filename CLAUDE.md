@@ -20,6 +20,7 @@ Always follow these guidelines strictly and without exception. Before completing
 - Text should be LF normalized
 - Prefer string interpolation using backticks over the `..` concatenation operator, like `` `Here is a string with an interpolated {value}.` ``
 - Prefer double quotes over single quotes
+- Multi-line strings using `[[...]]` should be indented with the rest of the code, even if this adds leading whitespace to the string content
 - Always read through existing code to match style
 
 ## Luau File Headers
