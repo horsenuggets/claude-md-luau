@@ -25,6 +25,57 @@ Code must work on any machine, including CI environments. If you find yourself t
 - The first sentence of the description must exactly match the GitHub repository description
 - Additional details can follow the description (usage examples, etc.)
 
+## Git Workflow
+
+### Branch Strategy
+
+- **main**: Protected branch, requires PR with passing checks, squash merge only
+- **release**: Protected branch, requires PR with passing checks, squash merge only
+- **pre-release**: Used to resolve merge conflicts before PRing to release
+
+### Branch Naming
+
+Feature branches must follow this format: `<prefix>/<lowercase-kebab-case-name>`
+
+Valid prefixes:
+- `feature/` - New features
+- `bugfix/` - Bug fixes
+- `hotfix/` - Urgent fixes
+- `chore/` - Maintenance tasks
+- `docs/` - Documentation updates
+- `refactor/` - Code refactoring
+- `test/` - Test additions or modifications
+
+Examples:
+- `feature/add-dark-mode`
+- `bugfix/fix-login-error`
+- `chore/update-dependencies`
+
+### Development Workflow
+
+1. Create a feature branch from main (e.g., `feature/my-feature`)
+2. Make changes and commit
+3. Create a PR to main
+4. PR must pass all checks (format, test, static analysis, branch naming)
+5. Squash merge to main
+
+### Release Workflow
+
+1. Update VERSION file with new version
+2. Update CHANGELOG.md with release notes
+3. Create or update `pre-release` branch from main
+4. Merge `release` into `pre-release` to handle any conflicts
+5. Resolve conflicts if any
+6. Create a PR from `pre-release` to `release`
+7. PR title must be exactly `Release X.Y.Z` (matching the VERSION file)
+8. PR must pass all checks including:
+   - All standard checks (format, test, static analysis)
+   - Version validation (proper semver bump)
+   - Changelog entry validation
+   - Diff check (PR content must match main exactly)
+9. Squash merge to release
+10. GitHub Actions automatically creates the release and tag
+
 ## Commits
 
 - Always break commits down into logical parts
