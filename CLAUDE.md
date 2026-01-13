@@ -2,6 +2,23 @@
 
 Always follow these guidelines strictly and without exception. Before completing any task, verify that all changes adhere to these rules.
 
+## CRITICAL: No Hardcoded Paths
+
+NEVER hardcode user-specific or machine-specific paths. This is absolutely unacceptable and unprofessional. Examples of what to NEVER do:
+
+- Home directories: `/home/chris`, `/home/username`, `/Users/username`
+- Tool storage paths: `~/.rokit/tool-storage/username/toolname/version/binary`
+- Any absolute path that only exists on one specific machine
+
+Always use:
+
+- Environment variables (e.g., `process.env.HOME`)
+- Relative paths
+- Tool shims that resolve paths dynamically (e.g., just `lune` instead of the full path)
+- Standard system paths that exist on all machines
+
+Code must work on any machine, including CI environments. If you find yourself typing a username or a path from your local machine, stop immediately.
+
 ## README Format
 
 - The title should be the exact repository name in lowercase kebab-case
