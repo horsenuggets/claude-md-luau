@@ -119,7 +119,13 @@ CHANGELOG.md should follow this format:
 
 You can read Lune documentation as needed to understand the Lune code you're writing:
 
-- https://lune-org.github.io/docs/api-reference/fs
-- https://lune-org.github.io/docs/api-reference/net
+- https://lune-org.github.io/docs/api-reference/datetime/
+- https://lune-org.github.io/docs/api-reference/fs/
+- https://lune-org.github.io/docs/api-reference/luau/
+- https://lune-org.github.io/docs/api-reference/net/
 - https://lune-org.github.io/docs/api-reference/process
-- https://lune-org.github.io/docs/api-reference/*
+- https://lune-org.github.io/docs/api-reference/regex/
+- https://lune-org.github.io/docs/api-reference/roblox/
+- https://lune-org.github.io/docs/api-reference/serde/
+- https://lune-org.github.io/docs/api-reference/stdio/
+- https://lune-org.github.io/docs/api-reference/task/
