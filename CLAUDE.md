@@ -41,6 +41,70 @@ For `init.luau` files, use the parent folder name instead of "init".
 The exception is the root-level `init.luau` file in packages, which is just a re-export for
 package consumers and does not need a header.
 
+## Naming Conventions
+
+### File Names
+
+- PascalCase for modules (e.g., `MyModule.luau`)
+- camelCase if the file returns a function (e.g., `doSomething.luau`)
+- PascalCase for executable Lune scripts (e.g., `RunTests.luau`)
+
+### Executable Files
+
+For executable Lune scripts, declare a local function with the file name in camelCase, then
+call it at the bottom:
+
+```luau
+local function runTests()
+    -- implementation
+end
+
+runTests()
+```
+
+### Modules
+
+For standard modules (PascalCase file names):
+
+- Functions: camelCase (e.g., `Module.doSomething()`)
+- Properties: PascalCase (e.g., `Module.SomeValue`)
+- Constructors: camelCase (e.g., `Module.new()`, `Module.create()`)
+
+### Classes
+
+For classes (modules using metatables to instantiate):
+
+- Methods: PascalCase (e.g., `Class.DoSomething`)
+- Static methods/functions: camelCase (e.g., `Class.new()`, `Class.fromData()`)
+- Instance properties: PascalCase
+- Static properties: PascalCase
+
+Define methods using dot syntax with explicit `self` parameter:
+
+```luau
+function Class.DoSomething(self: Class, value: number)
+    -- implementation
+end
+```
+
+Prefer explicit `export type` for the class type:
+
+```luau
+export type Class = {
+    Value: number,
+    DoSomething: (self: Class, value: number) -> (),
+}
+```
+
+### Internal/Private Members
+
+Internal methods, functions, and properties start with `_` followed by camelCase. This
+overrides the above rules:
+
+- Internal method: `_doInternalThing`
+- Internal property: `_internalValue`
+- Internal function: `_helperFunction`
+
 ## Comments
 
 - All comments should word-wrap at column 90
