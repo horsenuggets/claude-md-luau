@@ -38,6 +38,9 @@ Every Luau file should have this at the top:
 
 For `init.luau` files, use the parent folder name instead of "init".
 
+The exception is the root-level `init.luau` file in packages, which is just a re-export for
+package consumers and does not need a header.
+
 ## Comments
 
 - All comments should word-wrap at column 90
