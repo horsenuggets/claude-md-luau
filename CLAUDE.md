@@ -198,6 +198,9 @@ overrides the above rules:
 In `rokit.toml` and `wally.toml`, repository names using the `username/project` format should
 always be lowercase (e.g., `horsenuggets/testable`, not `HorseNuggets/Testable`).
 
+In `.luaurc`, do not add `@self` as an alias. It is already built-in and refers to the current
+module.
+
 ## Versioning
 
 - Version tags should NOT have a "v" prefix (use `0.0.1`, not `v0.0.1`)
