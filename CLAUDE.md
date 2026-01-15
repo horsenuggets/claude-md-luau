@@ -201,6 +201,7 @@ always be lowercase (e.g., `horsenuggets/testable`, not `HorseNuggets/Testable`)
 ## Versioning
 
 - Version tags should NOT have a "v" prefix (use `0.0.1`, not `v0.0.1`)
+- Do NOT manually create tags - CI automatically creates tags when releasing
 
 ## Changelog Format
 
