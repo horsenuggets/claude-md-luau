@@ -204,6 +204,7 @@ module.
 ## Versioning
 
 - Version tags should NOT have a "v" prefix (use `0.0.1`, not `v0.0.1`)
+- Do NOT manually create tags - CI automatically creates tags when releasing
 
 ## Changelog Format
 
@@ -255,6 +256,56 @@ CHANGELOG.md should follow this format:
 
 - For TestEZ-style tests, do not wrap everything in a describe block with just the file name
 - The file name is already used as the test name, so a wrapping describe block is redundant
+
+## Module Structure and @self
+
+In Roblox, Scripts can have other Scripts as children. For example, a Script can contain a
+ModuleScript, and you can access it via `script.ModuleScript`. This parent-child relationship
+is a fundamental pattern in Roblox development.
+
+When syncing to the filesystem, the OS doesn't support putting a file as a child of another
+file. Instead, we use the `Dir/init.luau` pattern to mimic this behavior:
+
+- A directory with an `init.luau` file is treated as a single module
+- The directory name becomes the module name
+- Files inside the directory are "child scripts" of that module
+- `@self` refers to the directory containing the `init.luau`
+
+### Example Structure
+
+```
+MyModule/
+├── init.luau       -- The main module (like Script in Roblox)
+├── Helper.luau     -- Child module (like script.Helper)
+└── Utils/
+    └── init.luau   -- Nested child module (like script.Utils)
+```
+
+### Using @self
+
+The `@self` alias should only be used inside `init.luau` files. It refers to the directory
+containing the `init.luau`, allowing you to require sibling files:
+
+```luau
+-- Inside MyModule/init.luau
+local Helper = require("@self/Helper")        -- MyModule/Helper.luau
+local Utils = require("@self/Utils")          -- MyModule/Utils/init.luau
+```
+
+This is equivalent to `script.Helper` and `script.Utils` in Roblox.
+
+### Rules for @self
+
+- Only use `@self` in `init.luau` files
+- `@self` refers to the parent directory of the `init.luau` file
+- For non-init files, use relative paths (`./sibling`) instead
+- Never use `@self` in regular `.luau` files that are not `init.luau`
+
+### Relative Requires from init.luau
+
+In an `init.luau` file, relative requires like `./foo` resolve relative to the parent
+directory (where the module would be imported from), not the directory containing the
+`init.luau`. Use `@self/foo` to require files in the same directory as the `init.luau`.
 
 ## Lune Documentation
 
