@@ -27,6 +27,12 @@ Code must work on any machine, including CI environments. If you find yourself t
 
 ## Git Workflow
 
+When the user mentions a repository, always check recursively in `~/git` to see if it is
+already cloned before cloning it elsewhere.
+
+Never work inside a submodule directory. Instead, find the standalone repository in `~/git`
+and make changes there.
+
 ### Branch Strategy
 
 - **main**: Protected branch, requires PR with passing checks, squash merge only
@@ -51,6 +57,9 @@ Examples:
 - `bugfix/fix-login-error`
 - `chore/update-dependencies`
 
+**Important**: Do NOT use dots in branch names. Version numbers like `0.1.0` are not valid in
+the suffix. Use `chore/bump-version` instead of `chore/release-0.1.0`.
+
 ### Development Workflow
 
 1. Create a feature branch from main (e.g., `feature/my-feature`)
@@ -58,6 +67,7 @@ Examples:
 3. Create a PR to main
 4. PR must pass all checks (format, test, static analysis, branch naming)
 5. Squash merge to main
+6. Switch back to main branch when done
 
 ### Release Workflow
 
@@ -68,13 +78,36 @@ Examples:
 5. Resolve conflicts if any
 6. Create a PR from `pre-release` to `release`
 7. PR title must be exactly `Release X.Y.Z` (matching the VERSION file)
-8. PR must pass all checks including:
+8. PR description should only contain Summary and Changelog sections (no "Test plan" checkboxes)
+9. PR must pass all checks including:
    - All standard checks (format, test, static analysis)
    - Version validation (proper semver bump)
    - Changelog entry validation
    - Diff check (PR content must match main exactly)
-9. Squash merge to release
-10. GitHub Actions automatically creates the release and tag
+10. Squash merge to release
+11. GitHub Actions automatically creates the release and tag
+
+**Branch protection note**: If merge fails with "required status checks are expected", the
+branch protection rules may have outdated check names. Check names must match the `name:`
+field in workflow jobs (e.g., "Check formatting" not "format").
+
+### PR Monitoring
+
+After opening a PR, continuously monitor its status until it is merged:
+
+1. Watch for CI check results
+2. If checks fail, investigate the failure, fix the issue, and push updates
+3. Keep iterating until all checks pass
+4. Wait for GitHub Copilot's review before merging (manually request a review from Copilot if
+   needed)
+5. Once all checks pass and Copilot has reviewed, merge immediately
+6. Do not abandon a PR mid-process; see it through to completion
+
+### Concurrent Work
+
+Before making changes to a repository, check if another Claude instance is already working
+there. If so, create a temporary worktree in `~/git/worktrees` for that repo so you can work
+seamlessly without conflicts.
 
 ## Commits
 
@@ -83,12 +116,14 @@ Examples:
 
 ## Formatting
 
-- Run `stylua .` often to ensure that code is formatted properly
+- Run `stylua .` often to ensure that Luau code is formatted properly
+- Run `prettier --write "**/*.json"` to format all JSON files (respects `.editorconfig`)
 - Every file should end in a single newline
 - Text should be LF normalized
 - Prefer string interpolation using backticks over the `..` concatenation operator, like `` `Here is a string with an interpolated {value}.` ``
 - Prefer double quotes over single quotes
 - Multi-line strings using `[[...]]` should be indented with the rest of the code, even if this adds leading whitespace to the string content
+- Group all constants together without blank lines between them
 - Always read through existing code to match style
 
 ## Luau File Headers
@@ -214,38 +249,14 @@ CHANGELOG.md should follow this format:
 # Changelog
 
 ## 0.0.2
-
-### Added
-
-- This is an example addition
-- This is another example addition
-
-### Changed
-
-- This is an example change
-- This is another example change
-
-### Fixed
-
-- This is an example fix
-- This is another example fix
+- Added a thing
+- Changed a thing
+- Fixed a thing
 
 ## 0.0.1
-
-### Added
-
-- This is an example addition
-- This is another example addition
-
-### Changed
-
-- This is an example change
-- This is another example change
-
-### Fixed
-
-- This is an example fix
-- This is another example fix
+- Added a thing
+- Changed a thing
+- Fixed a thing
 ```
 
 ## Ordering
@@ -307,6 +318,11 @@ This is equivalent to `script.Helper` and `script.Utils` in Roblox.
 In an `init.luau` file, relative requires like `./foo` resolve relative to the parent
 directory (where the module would be imported from), not the directory containing the
 `init.luau`. Use `@self/foo` to require files in the same directory as the `init.luau`.
+
+## Tools
+
+- Use `fd` instead of `find`
+- Use `rg` (ripgrep) instead of `grep`
 
 ## Lune Documentation
 

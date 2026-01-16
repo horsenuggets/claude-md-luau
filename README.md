@@ -1,3 +1,3 @@
 # claude-md-luau
 
-Claude Code Guidelines for Luau projects.
+Claude Code guidelines for Luau projects.
