@@ -251,6 +251,7 @@ CHANGELOG.md should follow this format:
 ## Ordering
 
 - When things can be sorted alphabetically, definitely do that (e.g., imports, table keys, function parameters)
+- Constants (like `local THIS_IS_A_CONSTANT`) should be placed above the module definition (like `local MyModule = {}`)
 
 ## Tests
 
