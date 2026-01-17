@@ -240,6 +240,8 @@ module.
 
 - Version tags should NOT have a "v" prefix (use `0.0.1`, not `v0.0.1`)
 - Do NOT manually create tags - CI automatically creates tags when releasing
+- Do NOT manually create GitHub releases - always let the publish workflow create them
+  automatically. If the workflow fails, fix the issue and re-run the workflow.
 
 ## Changelog Format
 
