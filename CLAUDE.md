@@ -2,6 +2,10 @@
 
 Always follow these guidelines strictly and without exception. Before completing any task, verify that all changes adhere to these rules.
 
+## Task Completion
+
+When a user queues multiple tasks in a single message (like "do X, then /commit, /push, /release"), follow through on all queued tasks automatically without requiring additional reminders.
+
 ## CRITICAL: No Hardcoded Paths
 
 NEVER hardcode user-specific or machine-specific paths. This is absolutely unacceptable and unprofessional. Examples of what to NEVER do:
