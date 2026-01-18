@@ -113,6 +113,8 @@ seamlessly without conflicts.
 
 - Always break commits down into logical parts
 - Do not co-author yourself in commits
+- Use sentence case for commit messages (start with a capital letter)
+- Do NOT use conventional commit prefixes like `test:`, `chore:`, `feat:`, `fix:`, etc.
 
 ## Formatting
 
@@ -211,7 +213,9 @@ overrides the above rules:
 
 ## Comments
 
-- All comments should word-wrap at column 90
+- All comments should word-wrap at column 90 (wrap at word boundaries, never mid-word)
+- In block comments, use `> ` prefix for list items instead of indentation with spaces (e.g.,
+  `> DISCORD_BOT_TOKEN - description` instead of `  DISCORD_BOT_TOKEN - description`)
 
 ## Functions
 
@@ -227,6 +231,7 @@ overrides the above rules:
 - Structure everything in complete sentences
 - Surround strings of interest in quotation marks `"`
 - Use `[Usage]` instead of `Usage:` for usage messages
+- Handle singular vs plural properly when displaying counts (e.g., "1 second" vs "2 seconds", "1 test suite" vs "2 test suites")
 
 ## Configuration Files
 
