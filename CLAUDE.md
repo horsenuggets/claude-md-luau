@@ -95,6 +95,12 @@ the suffix. Use `chore/bump-version` instead of `chore/release-0.1.0`.
 branch protection rules may have outdated check names. Check names must match the `name:`
 field in workflow jobs (e.g., "Check formatting" not "format").
 
+### PR Creation
+
+When creating a GitHub PR, always use `gh prc` instead of `gh pr create`. This alias
+automatically adds the user as an assignee. All other flags work the same way (e.g.,
+`gh prc --base main --title "My PR"`).
+
 ### PR Monitoring
 
 After opening a PR, continuously monitor its status until it is merged:
@@ -221,6 +227,57 @@ overrides the above rules:
 - In block comments, use `> ` prefix for list items instead of indentation with spaces (e.g.,
   `> DISCORD_BOT_TOKEN - description` instead of `  DISCORD_BOT_TOKEN - description`)
 
+## Moonwave Documentation
+
+Use Moonwave doc comments for API documentation. Doc comments use `--[=[` and `]=]` (not
+regular `--[[`).
+
+### Class Documentation
+
+```luau
+--[=[
+    @class ClassName
+    @tag class|structure|enum
+
+    Description of the class.
+
+    ```lua
+    -- Example usage code
+    ```
+]=]
+local ClassName = {}
+```
+
+### Function/Method Documentation
+
+```luau
+--[=[
+    Description of the function.
+
+    @param paramName ParamType -- Description of parameter
+    @param optionalParam ParamType? -- Optional parameter
+    @return ReturnType -- Description of return value
+]=]
+function ClassName.MethodName(self: ClassName, paramName: ParamType): ReturnType
+```
+
+### Property Documentation
+
+```luau
+--[=[
+    @prop PropertyName Type
+    Description of the property.
+]=]
+```
+
+### Building Documentation
+
+Run `moonwave build --code Source` to generate docs (specify source directory explicitly).
+Moonwave defaults to `src` or `lib`, so projects using `Source` must specify `--code Source`.
+
+In `moonwave.toml`, do not add a manual GitHub navbar item - Moonwave automatically adds one
+from `gitRepoUrl`.
+
 ## Functions
 
 - Always add runtime typechecking to function parameters using assert
@@ -334,6 +391,14 @@ directory (where the module would be imported from), not the directory containin
 
 - Use `fd` instead of `find`
 - Use `rg` (ripgrep) instead of `grep`
+- Feel free to add new functions to `~/.zshrc` and new aliases to `~/.aliases` to improve
+  workflow efficiency
+
+## Custom Slash Commands
+
+Custom slash commands are stored as Markdown files in `~/.claude/commands/`. Each command is a
+`.md` file with YAML frontmatter containing `description:` followed by the command instructions.
+The filename (without `.md`) becomes the command name (e.g., `ship.md` creates `/ship`).
 
 ## Lune Documentation
 
