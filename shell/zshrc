@@ -253,17 +253,26 @@ mkrelease() {
 # Claude Session Management
 # ============================================================================
 # Source from claude-sessions submodule (the source of truth)
+# Uses the path of this script to find the submodule
 
-_claude_sessions_path="${BASH_SOURCE[0]%/*}/../claude-sessions/claude-sessions.zsh"
-[[ -n "$ZSH_VERSION" ]] && _claude_sessions_path="${0:A:h}/../claude-sessions/claude-sessions.zsh"
+# Get the directory containing this script
+if [[ -n "$ZSH_VERSION" ]]; then
+    _zshrc_dir="${0:A:h}"
+elif [[ -n "${BASH_SOURCE[0]}" ]]; then
+    _zshrc_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+else
+    _zshrc_dir="$(cd "$(dirname "$0")" && pwd)"
+fi
+
+_claude_sessions_path="${_zshrc_dir}/../claude-sessions/Scripts/claude-sessions.sh"
 
 if [[ -f "$_claude_sessions_path" ]]; then
     source "$_claude_sessions_path"
-elif [[ -f "$HOME/git/claude-sessions/claude-sessions.zsh" ]]; then
+elif [[ -f "$HOME/git/claude-sessions/Scripts/claude-sessions.sh" ]]; then
     # Fallback to standalone repo if submodule not available
-    source "$HOME/git/claude-sessions/claude-sessions.zsh"
+    source "$HOME/git/claude-sessions/Scripts/claude-sessions.sh"
 fi
-unset _claude_sessions_path
+unset _zshrc_dir _claude_sessions_path
 
 # ============================================================================
 # Aliases
