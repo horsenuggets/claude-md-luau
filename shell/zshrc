@@ -1,0 +1,272 @@
+# Claude Workflow Shell Configuration
+# Source this file from your ~/.zshrc or ~/.bashrc
+# Works on macOS, Linux, and WSL
+
+# ============================================================================
+# Platform Detection
+# ============================================================================
+
+_detect_platform() {
+    case "$(uname -s)" in
+        Darwin*) echo "macos" ;;
+        Linux*)
+            if grep -qi microsoft /proc/version 2>/dev/null; then
+                echo "wsl"
+            else
+                echo "linux"
+            fi
+            ;;
+        MINGW*|MSYS*|CYGWIN*) echo "gitbash" ;;
+        *) echo "unknown" ;;
+    esac
+}
+
+CLAUDE_PLATFORM=$(_detect_platform)
+
+# ============================================================================
+# Cross-Platform Clipboard
+# ============================================================================
+
+_clipboard_copy() {
+    case "$CLAUDE_PLATFORM" in
+        macos) pbcopy ;;
+        linux) xclip -selection clipboard 2>/dev/null || xsel --clipboard --input 2>/dev/null ;;
+        wsl) clip.exe ;;
+        gitbash) clip ;;
+        *) cat > /dev/null ;;  # Fallback: discard
+    esac
+}
+
+_clipboard_paste() {
+    case "$CLAUDE_PLATFORM" in
+        macos) pbpaste ;;
+        linux) xclip -selection clipboard -o 2>/dev/null || xsel --clipboard --output 2>/dev/null ;;
+        wsl) powershell.exe -command "Get-Clipboard" | tr -d '\r' ;;
+        gitbash) powershell.exe -command "Get-Clipboard" | tr -d '\r' ;;
+        *) echo "" ;;
+    esac
+}
+
+# ============================================================================
+# Environment Setup
+# ============================================================================
+
+# macOS Homebrew
+if [[ "$CLAUDE_PLATFORM" == "macos" && ":$PATH:" != *":/opt/homebrew/bin:"* ]]; then
+    export PATH="/opt/homebrew/bin:$PATH"
+fi
+
+# Load environment variables from .env file
+if [[ -f ~/.env ]]; then
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # Skip empty lines and comments
+        line="${line%%#*}"
+        line="${line#"${line%%[![:space:]]*}"}"
+        line="${line%"${line##*[![:space:]]}"}"
+        [[ -z "$line" ]] && continue
+
+        # Extract key and value (key is everything before first =)
+        key="${line%%=*}"
+        value="${line#*=}"
+        # Skip if no = found or key is invalid
+        [[ "$key" == "$line" ]] && continue
+        [[ ! "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] && continue
+        # Remove surrounding quotes if present
+        value="${value#\"}"
+        value="${value%\"}"
+        value="${value#\'}"
+        value="${value%\'}"
+        export "$key"="$value"
+    done < ~/.env
+fi
+
+# ============================================================================
+# Git Utilities
+# ============================================================================
+
+# Check if a repo has changes ready to ship
+shipcheck() {
+    # Verify we're in a git repo
+    if ! git rev-parse --git-dir > /dev/null 2>&1; then
+        echo "Not a git repository"
+        return 1
+    fi
+
+    local has_issues=0
+
+    # Check for uncommitted changes
+    if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+        echo "⚠ Uncommitted changes"
+        has_issues=1
+    fi
+
+    # Check for untracked files
+    if [[ -n $(git ls-files --others --exclude-standard 2>/dev/null) ]]; then
+        echo "⚠ Untracked files"
+        has_issues=1
+    fi
+
+    # Check for unpushed commits
+    local unpushed=$(git log @{u}..HEAD --oneline 2>/dev/null)
+    if [[ -n "$unpushed" ]]; then
+        echo "⚠ Unpushed commits:"
+        echo "$unpushed" | sed 's/^/  /'
+        has_issues=1
+    fi
+
+    # Check commits on main not in release (if release branch exists)
+    if git show-ref --verify --quiet refs/remotes/origin/release 2>/dev/null; then
+        local unreleased=$(git log origin/release..origin/main --oneline 2>/dev/null)
+        if [[ -n "$unreleased" ]]; then
+            echo "📦 Commits on main not in release:"
+            echo "$unreleased" | sed 's/^/  /'
+            has_issues=1
+        fi
+    fi
+
+    # Check commits since latest tag
+    local latest_tag=$(git describe --tags --abbrev=0 2>/dev/null)
+    if [[ -n "$latest_tag" ]]; then
+        local since_tag=$(git log "$latest_tag"..HEAD --oneline 2>/dev/null)
+        if [[ -n "$since_tag" ]]; then
+            echo "🏷 Commits since $latest_tag:"
+            echo "$since_tag" | sed 's/^/  /'
+            has_issues=1
+        fi
+    fi
+
+    if [[ $has_issues -eq 0 ]]; then
+        echo "✓ Nothing to ship"
+    fi
+}
+
+# gh pr create wrapper that targets the origin remote repo (fork) instead of upstream
+# This ensures PRs are created on your fork where you have collaborator access
+ghprc() {
+    # Get the origin remote's repo (format: owner/repo)
+    local origin_repo=$(git remote get-url origin 2>/dev/null | sed -E 's#(git@github.com:|https://github.com/)##' | sed 's/.git$//')
+
+    if [[ -z "$origin_repo" ]]; then
+        echo "Error: Could not determine origin remote repository"
+        return 1
+    fi
+
+    # Run gh pr create with --repo set to origin and --assignee @me
+    gh pr create --repo "$origin_repo" --assignee @me "$@"
+}
+
+# Generate a random password
+# Usage: genpass [length] (default 20)
+genpass() {
+    local length=${1:-20}
+    local password=$(LC_ALL=C tr -dc 'A-Za-z0-9!@#$%^&*()_+-=' < /dev/urandom | head -c "$length")
+    echo "$password"
+    echo "$password" | _clipboard_copy
+    echo "(Copied to clipboard)"
+}
+
+# List all git projects in ~/git sorted by most recent commit
+# Usage: gitprojects
+gitprojects() {
+    local git_dir="$HOME/git"
+
+    if [[ ! -d "$git_dir" ]]; then
+        echo "Directory not found: $git_dir"
+        return 1
+    fi
+
+    # Collect repos with their last commit timestamps
+    local repos=()
+    for dir in "$git_dir"/*/; do
+        [[ -d "$dir/.git" ]] || continue
+        local name=$(basename "$dir")
+        local timestamp=$(git -C "$dir" log -1 --format=%ct 2>/dev/null || echo "0")
+        local date=$(git -C "$dir" log -1 --format=%ci 2>/dev/null || echo "no commits")
+        repos+=("$timestamp|$name|$date")
+    done
+
+    # Sort by timestamp (descending) and display
+    printf "%s\n" "${repos[@]}" | sort -t'|' -k1 -rn | while IFS='|' read -r ts name date; do
+        # Truncate long names
+        if [[ ${#name} -gt 27 ]]; then
+            name="${name:0:27}..."
+        fi
+
+        if [[ "$date" == "no commits" ]]; then
+            printf "%-30s %s\n" "$name" "(no commits)"
+        else
+            # Format date nicely (extract date and time)
+            local formatted=$(echo "$date" | cut -d' ' -f1,2)
+            printf "%-30s %s\n" "$name" "$formatted"
+        fi
+    done
+}
+
+# Create a release branch from main that merges release, always keeping main's content
+# This resolves any conflicts by overwriting release content with main's version
+# Usage: mkrelease <version> (e.g., mkrelease 0.1.2)
+mkrelease() {
+    local version="$1"
+    if [[ -z "$version" ]]; then
+        echo "Usage: mkrelease <version>"
+        echo "Example: mkrelease 0.1.2"
+        return 1
+    fi
+
+    # Ensure we're on main and up to date
+    git checkout main && git pull || return 1
+
+    # Create release branch from main
+    local branch="release-${version}"
+    git checkout -b "$branch" || return 1
+
+    # Fetch release branch and merge it, keeping all of main's content
+    git fetch origin release
+    git merge origin/release --no-edit -X ours || return 1
+
+    # Check if merge brought in any unwanted changes
+    local diff=$(git diff origin/main --stat)
+    if [[ -n "$diff" ]]; then
+        echo "Merge brought in changes from release, resetting to main's versions..."
+        # Get list of files that differ and reset them to main
+        git diff origin/main --name-only | while read file; do
+            git checkout origin/main -- "$file" 2>/dev/null || true
+        done
+        git add -A
+        git commit --amend --no-edit
+    fi
+
+    # Verify branch matches main exactly
+    diff=$(git diff origin/main --stat)
+    if [[ -n "$diff" ]]; then
+        echo "Error: Branch still differs from main:"
+        echo "$diff"
+        return 1
+    fi
+
+    echo "✓ Created branch '$branch' matching main exactly"
+    echo "Push with: git push -u origin $branch"
+    echo "Then create PR: gh pr create --base release --title 'Release $version'"
+}
+
+# ============================================================================
+# Claude Session Management
+# ============================================================================
+# Source from claude-sessions submodule (the source of truth)
+
+_claude_sessions_path="${BASH_SOURCE[0]%/*}/../claude-sessions/claude-sessions.zsh"
+[[ -n "$ZSH_VERSION" ]] && _claude_sessions_path="${0:A:h}/../claude-sessions/claude-sessions.zsh"
+
+if [[ -f "$_claude_sessions_path" ]]; then
+    source "$_claude_sessions_path"
+elif [[ -f "$HOME/git/claude-sessions/claude-sessions.zsh" ]]; then
+    # Fallback to standalone repo if submodule not available
+    source "$HOME/git/claude-sessions/claude-sessions.zsh"
+fi
+unset _claude_sessions_path
+
+# ============================================================================
+# Aliases
+# ============================================================================
+
+alias gp='gitprojects'

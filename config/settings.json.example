@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cat ~/git/claude-md-luau/CLAUDE.md"
+          }
+        ]
+      }
+    ]
+  }
+}

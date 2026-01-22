@@ -1,0 +1,11 @@
+# Common aliases for Claude workflow
+# Source this file from your shell rc file or copy to ~/.aliases
+
+# Claude shortcuts
+alias cld="claude --dangerously-skip-permissions"
+alias gst="git status"
+
+# Additional useful aliases
+alias cls='claude-ls'
+alias csp='claude-spawn'
+alias crepo='claude-repo'
