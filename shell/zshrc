@@ -168,10 +168,13 @@ genpass() {
 # List all git projects in ~/git sorted by most recent commit
 # List all projects in ~/git sorted by recent activity
 # For git repos: uses last commit timestamp
-# For non-git directories: uses most recently modified file
+# For non-git directories: uses most recently modified file (if include_non_git=true)
+# Output brightness fades based on age (recent = bright, old = dim)
 # Usage: gitprojects
 gitprojects() {
     local git_dir="$HOME/git"
+    local include_non_git=true
+    local excluded_dirs=("worktrees" "sandbox")
 
     if [[ ! -d "$git_dir" ]]; then
         echo "Directory not found: $git_dir"
@@ -183,6 +186,11 @@ gitprojects() {
     for dir in "$git_dir"/*/; do
         [[ -d "$dir" ]] || continue
         local name=$(basename "$dir")
+
+        # Skip excluded directories
+        if [[ " ${excluded_dirs[*]} " =~ " ${name} " ]]; then
+            continue
+        fi
         local timestamp=""
         local date=""
         local source=""
@@ -197,9 +205,12 @@ gitprojects() {
                 # Git repo with no commits, fall back to file modification
                 source="file"
             fi
-        else
+        elif [[ "$include_non_git" == true ]]; then
             # Not a git repo, use file modification time
             source="file"
+        else
+            # Skip non-git directories
+            continue
         fi
 
         if [[ "$source" == "file" ]]; then
@@ -231,23 +242,84 @@ gitprojects() {
         projects+=("$timestamp|$name|$date|$source")
     done
 
-    # Sort by timestamp (descending) and display
-    printf "%s\n" "${projects[@]}" | sort -t'|' -k1 -rn | while IFS='|' read -r ts name date source; do
+    # Sort and store in array for two-pass processing
+    local sorted_projects=()
+    while IFS= read -r line; do
+        sorted_projects+=("$line")
+    done < <(printf "%s\n" "${projects[@]}" | sort -t'|' -k1 -rn)
+
+    # Find min/max timestamps for normalization (excluding 0)
+    local max_ts=0
+    local min_ts=999999999999
+    for entry in "${sorted_projects[@]}"; do
+        local ts=${entry%%|*}
+        if [[ "$ts" -gt 0 ]]; then
+            [[ "$ts" -gt "$max_ts" ]] && max_ts=$ts
+            [[ "$ts" -lt "$min_ts" ]] && min_ts=$ts
+        fi
+    done
+
+    local reset=$'\033[0m'
+    local total=${#sorted_projects[@]}
+    local position=0
+
+    for entry in "${sorted_projects[@]}"; do
+        IFS='|' read -r ts name date source <<< "$entry"
+
         # Truncate long names
         if [[ ${#name} -gt 27 ]]; then
             name="${name:0:27}..."
         fi
 
+        # Everything based on normalized position
+        local pos_ratio=$(awk -v pos="$position" -v total="$total" 'BEGIN {
+            if (total <= 1) print 0
+            else printf "%.4f", pos / (total - 1)
+        }')
+
+        # Fire gradient: white -> yellow -> orange -> red -> dim gray
+        local rgb=$(awk -v t="$pos_ratio" 'BEGIN {
+            if (t < 0.1) {
+                p = t / 0.1
+                r = 255; g = 255; b = int(255 * (1 - p))
+            } else if (t < 0.25) {
+                p = (t - 0.1) / 0.15
+                r = 255; g = int(255 - 80 * p); b = 0
+            } else if (t < 0.4) {
+                p = (t - 0.25) / 0.15
+                r = 255; g = int(175 - 75 * p); b = 0
+            } else if (t < 0.55) {
+                p = (t - 0.4) / 0.15
+                r = 255; g = int(100 - 100 * p); b = 0
+            } else if (t < 0.7) {
+                # red -> dark red
+                p = (t - 0.55) / 0.15
+                r = int(255 - 105 * p); g = 0; b = 0
+            } else {
+                # dark red -> dim gray (desaturate and fade)
+                p = (t - 0.7) / 0.3
+                r = int(150 - 80 * p); g = int(70 * p); b = int(70 * p)
+            }
+            printf "%d;%d;%d", r, g, b
+        }')
+
+        # Bold for top 10%
+        local bold=""
+        if awk -v p="$pos_ratio" 'BEGIN { exit !(p < 0.1) }'; then
+            bold="1;"
+        fi
+
+        local color=$'\033['"${bold}38;2;${rgb}m"
+        ((position++))
+
         if [[ "$date" == "no activity" ]]; then
-            printf "%-30s %s\n" "$name" "(no activity)"
+            printf "${color}%-30s %s${reset}\n" "$name" "(no activity)"
         elif [[ "$source" == "file" ]]; then
-            # Format date and add indicator for non-git
             local formatted=$(echo "$date" | cut -d' ' -f1,2)
-            printf "%-30s %s (files)\n" "$name" "$formatted"
+            printf "${color}%-30s %s (files)${reset}\n" "$name" "$formatted"
         else
-            # Format date nicely (extract date and time)
             local formatted=$(echo "$date" | cut -d' ' -f1,2)
-            printf "%-30s %s\n" "$name" "$formatted"
+            printf "${color}%-30s %s${reset}\n" "$name" "$formatted"
         fi
     done
 }
