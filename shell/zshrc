@@ -166,6 +166,9 @@ genpass() {
 }
 
 # List all git projects in ~/git sorted by most recent commit
+# List all projects in ~/git sorted by recent activity
+# For git repos: uses last commit timestamp
+# For non-git directories: uses most recently modified file
 # Usage: gitprojects
 gitprojects() {
     local git_dir="$HOME/git"
@@ -175,25 +178,72 @@ gitprojects() {
         return 1
     fi
 
-    # Collect repos with their last commit timestamps
-    local repos=()
+    # Collect projects with their timestamps
+    local projects=()
     for dir in "$git_dir"/*/; do
-        [[ -d "$dir/.git" ]] || continue
+        [[ -d "$dir" ]] || continue
         local name=$(basename "$dir")
-        local timestamp=$(git -C "$dir" log -1 --format=%ct 2>/dev/null || echo "0")
-        local date=$(git -C "$dir" log -1 --format=%ci 2>/dev/null || echo "no commits")
-        repos+=("$timestamp|$name|$date")
+        local timestamp=""
+        local date=""
+        local source=""
+
+        if [[ -d "$dir/.git" ]]; then
+            # Git repository: use last commit timestamp
+            timestamp=$(git -C "$dir" log -1 --format=%ct 2>/dev/null)
+            if [[ -n "$timestamp" && "$timestamp" != "0" ]]; then
+                date=$(git -C "$dir" log -1 --format=%ci 2>/dev/null)
+                source="git"
+            else
+                # Git repo with no commits, fall back to file modification
+                source="file"
+            fi
+        else
+            # Not a git repo, use file modification time
+            source="file"
+        fi
+
+        if [[ "$source" == "file" ]]; then
+            # Find most recently modified file recursively
+            local newest_file=""
+            if command -v fd &>/dev/null; then
+                newest_file=$(fd --type f --hidden --exclude .git . "$dir" 2>/dev/null | head -100 | xargs stat -f '%m %N' 2>/dev/null | sort -rn | head -1)
+            else
+                newest_file=$(find "$dir" -type f ! -path '*/.git/*' 2>/dev/null | head -100 | xargs stat -f '%m %N' 2>/dev/null | sort -rn | head -1)
+            fi
+
+            if [[ -n "$newest_file" ]]; then
+                timestamp=${newest_file%% *}
+                # Convert epoch to date format
+                if [[ "$(uname)" == "Darwin" ]]; then
+                    date=$(date -r "$timestamp" '+%Y-%m-%d %H:%M:%S' 2>/dev/null)
+                else
+                    date=$(date -d "@$timestamp" '+%Y-%m-%d %H:%M:%S' 2>/dev/null)
+                fi
+            fi
+        fi
+
+        # Default if no timestamp found
+        if [[ -z "$timestamp" ]]; then
+            timestamp="0"
+            date="no activity"
+        fi
+
+        projects+=("$timestamp|$name|$date|$source")
     done
 
     # Sort by timestamp (descending) and display
-    printf "%s\n" "${repos[@]}" | sort -t'|' -k1 -rn | while IFS='|' read -r ts name date; do
+    printf "%s\n" "${projects[@]}" | sort -t'|' -k1 -rn | while IFS='|' read -r ts name date source; do
         # Truncate long names
         if [[ ${#name} -gt 27 ]]; then
             name="${name:0:27}..."
         fi
 
-        if [[ "$date" == "no commits" ]]; then
-            printf "%-30s %s\n" "$name" "(no commits)"
+        if [[ "$date" == "no activity" ]]; then
+            printf "%-30s %s\n" "$name" "(no activity)"
+        elif [[ "$source" == "file" ]]; then
+            # Format date and add indicator for non-git
+            local formatted=$(echo "$date" | cut -d' ' -f1,2)
+            printf "%-30s %s (files)\n" "$name" "$formatted"
         else
             # Format date nicely (extract date and time)
             local formatted=$(echo "$date" | cut -d' ' -f1,2)
