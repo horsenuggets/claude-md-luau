@@ -1,3 +1,0 @@
-[submodule "claude-sessions"]
-	path = claude-sessions
-	url = https://github.com/horsenuggets/claude-sessions.git
