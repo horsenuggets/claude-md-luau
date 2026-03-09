@@ -25,8 +25,8 @@ git submodule add https://github.com/horsenuggets/claude-md-luau.git Submodules/
 
 ## Slash Commands
 
-| Command | Description |
-|---------|-------------|
+| Command           | Description                  |
+| ----------------- | ---------------------------- |
 | `/template [cmd]` | Manage luau-package-template |
 
 ## License
