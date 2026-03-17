@@ -240,48 +240,82 @@ You can read Lune documentation as needed to understand the Lune code you're wri
 Use `luau-lsp analyze` to type-check and lint Luau source files. Projects using the
 luau-cicd submodule already have this integrated via `./Scripts/RunStaticAnalysis.luau`.
 
-### Basic usage
+Most projects have both Lune code (scripts in `Scripts/`) and Roblox code (source in
+`Source/`). These require different platforms because they have different globals and type
+definitions.
+
+### Lune projects and scripts
+
+Lune code uses `--platform=lune` which provides built-in globals like `process`, `fs`,
+`net`, `task`, `stdio`, etc. This is the right platform for anything in `Scripts/` and
+for standalone Lune packages that don't use Roblox APIs.
 
 ```bash
-# Standard Luau project (no Roblox types)
-luau-lsp analyze --platform=standard .
+luau-lsp analyze \
+  --platform=lune \
+  --no-flags-enabled \
+  --ignore "Packages/**" \
+  --ignore "DevPackages/**" \
+  --ignore "Submodules/**" \
+  Scripts/
+```
 
-# Roblox project (built-in PluginSecurity definitions are loaded automatically)
-luau-lsp analyze --platform=roblox --sourcemap=sourcemap.json .
+### Roblox projects
 
-# Lune project (built-in Lune globals)
-luau-lsp analyze --platform=lune .
+Roblox code uses `--platform=roblox` which auto-loads PluginSecurity-level type
+definitions (Instance, UDim2, Color3, Enum, game, workspace, etc.). No `--definitions`
+flag is needed — the fork embeds them at build time.
+
+Roblox projects also need a Rojo sourcemap for proper module resolution. Generate one
+first, then pass it:
+
+```bash
+rojo sourcemap default.project.json --output sourcemap.json
+
+luau-lsp analyze \
+  --platform=roblox \
+  --sourcemap=sourcemap.json \
+  --no-flags-enabled \
+  --ignore "Packages/**" \
+  --ignore "DevPackages/**" \
+  --ignore "Submodules/**" \
+  Source/
+```
+
+The sourcemap enables DataModel-aware require resolution, including Wally packages that
+use `default.project.json` with `$path` redirects (e.g., Fusion).
+
+### Mixed projects (Lune + Roblox)
+
+Many projects have both Lune scripts and Roblox source. Run analyze twice with different
+platforms targeting different directories:
+
+```bash
+# Analyze Lune scripts
+luau-lsp analyze --platform=lune --no-flags-enabled \
+  --ignore "Packages/**" --ignore "DevPackages/**" \
+  Scripts/
+
+# Analyze Roblox source
+luau-lsp analyze --platform=roblox --no-flags-enabled \
+  --sourcemap=sourcemap.json \
+  --ignore "Packages/**" --ignore "DevPackages/**" \
+  Source/
 ```
 
 ### Common flags
 
 - `--platform=standard|roblox|lune` - Load platform-specific type definitions
 - `--sourcemap=sourcemap.json` - Rojo sourcemap for DataModel-aware resolution
-- `--ignore "Packages/**"` - Ignore glob patterns (repeat for multiple)
+- `--ignore "glob"` - Ignore glob patterns (repeat for multiple)
 - `--no-flags-enabled` - Disable all Luau FFlags (useful for deterministic CI)
 - `--definitions=path.d.luau` - Load custom type definitions (overrides built-in)
 - `--formatter=gnu` - GNU-style error format for editor integration
 
-### Typical CI invocation
-
-```bash
-luau-lsp analyze \
-  --platform=lune \
-  --ignore "Packages/**" \
-  --ignore "DevPackages/**" \
-  --ignore "Submodules/**" \
-  --no-flags-enabled \
-  .
-```
+### Exit codes
 
 The exit code is non-zero if any errors are found. Warnings alone do not cause failure
 unless the project's `.luaurc` promotes them to errors.
-
-### Roblox projects
-
-For Roblox projects, generate a sourcemap first with `rojo sourcemap default.project.json
---output sourcemap.json`, then pass `--sourcemap=sourcemap.json`. The fork's built-in
-Roblox definitions mean you no longer need `--definitions` for standard type checking.
 
 ## Custom Slash Commands
 
