@@ -50,6 +50,10 @@ end
 runTests()
 ```
 
+Executable Lune scripts in `Scripts/` must have the executable bit set and start with a
+shebang line (`#!/usr/bin/env -S lune run`). Always run them directly (e.g.,
+`./Scripts/RunTests.luau`) instead of using `lune run`.
+
 ### Modules
 
 For standard modules (PascalCase file names):
@@ -230,6 +234,54 @@ You can read Lune documentation as needed to understand the Lune code you're wri
 - https://lune-org.github.io/docs/api-reference/serde/
 - https://lune-org.github.io/docs/api-reference/stdio/
 - https://lune-org.github.io/docs/api-reference/task/
+
+## Static Analysis with luau-lsp
+
+Use `luau-lsp analyze` to type-check and lint Luau source files. Projects using the
+luau-cicd submodule already have this integrated via `./Scripts/RunStaticAnalysis.luau`.
+
+### Basic usage
+
+```bash
+# Standard Luau project (no Roblox types)
+luau-lsp analyze --platform=standard .
+
+# Roblox project (built-in PluginSecurity definitions are loaded automatically)
+luau-lsp analyze --platform=roblox --sourcemap=sourcemap.json .
+
+# Lune project (built-in Lune globals)
+luau-lsp analyze --platform=lune .
+```
+
+### Common flags
+
+- `--platform=standard|roblox|lune` - Load platform-specific type definitions
+- `--sourcemap=sourcemap.json` - Rojo sourcemap for DataModel-aware resolution
+- `--ignore "Packages/**"` - Ignore glob patterns (repeat for multiple)
+- `--no-flags-enabled` - Disable all Luau FFlags (useful for deterministic CI)
+- `--definitions=path.d.luau` - Load custom type definitions (overrides built-in)
+- `--formatter=gnu` - GNU-style error format for editor integration
+
+### Typical CI invocation
+
+```bash
+luau-lsp analyze \
+  --platform=lune \
+  --ignore "Packages/**" \
+  --ignore "DevPackages/**" \
+  --ignore "Submodules/**" \
+  --no-flags-enabled \
+  .
+```
+
+The exit code is non-zero if any errors are found. Warnings alone do not cause failure
+unless the project's `.luaurc` promotes them to errors.
+
+### Roblox projects
+
+For Roblox projects, generate a sourcemap first with `rojo sourcemap default.project.json
+--output sourcemap.json`, then pass `--sourcemap=sourcemap.json`. The fork's built-in
+Roblox definitions mean you no longer need `--definitions` for standard type checking.
 
 ## Custom Slash Commands
 
