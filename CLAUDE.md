@@ -17,14 +17,19 @@ Every Luau file should have this at the top:
 ```luau
 --[[
 
-<File name without extension>
+<File name without .luau extension>
 
 <Description in a few sentences, wrapping by word at column 90>
 
 --]]
 ```
 
-For `init.luau` files, use the parent folder name instead of "init".
+The name in the header is the full file name with `.luau` removed. For files with
+sub-extensions like `.spec.luau`, `.story.luau`, or `.storybook.luau`, keep the
+sub-extension in the header (e.g., `MyModule.spec`, `PromptInput.story`).
+
+For `init.luau` files (and Rojo variants like `init.server.luau`, `init.client.luau`,
+`init.plugin.luau`), use the parent folder name instead of "init".
 
 The exception is the root-level `init.luau` file in packages, which is just a re-export for
 package consumers and does not need a header.
@@ -316,6 +321,96 @@ luau-lsp analyze --platform=roblox --no-flags-enabled \
 
 The exit code is non-zero if any errors are found. Warnings alone do not cause failure
 unless the project's `.luaurc` promotes them to errors.
+
+## Roblox Studio MCP
+
+When working on Roblox projects, you can interact with a running Roblox Studio instance via
+the RobloxStudio MCP server. This is useful for visually verifying UI changes, inspecting the
+game tree, reading scripts, and more.
+
+### UI Labs Shared API
+
+The fork of UI Labs at `~/git/ui-labs` (branch `feature/shared-api`) exposes a
+`shared.UILabs` API that allows programmatic story management from `execute_luau`:
+
+```luau
+-- List all available stories
+local stories = shared.UILabs.listStories()
+-- Returns: { { name: string, path: string, module: ModuleScript }, ... }
+
+-- Mount a story by name (blocks until rendered, up to 5s)
+local holder = shared.UILabs.mountStory("SetKeyPrompt")
+-- Returns: Frame (the rendered story container) or nil
+
+-- Get the holder of an already-mounted story
+local holder = shared.UILabs.getStoryHolder("SetKeyPrompt")
+
+-- List currently mounted stories
+local mounted = shared.UILabs.getMountedStories()
+
+-- Unmount a story
+shared.UILabs.unmountStory("SetKeyPrompt")
+```
+
+UI Labs must be open in Studio for the API to be available. The stories are
+discovered from Rojo serve sessions (e.g., `rojo serve storybook.project.json`).
+
+To rebuild and install the fork:
+```bash
+cd ~/git/ui-labs
+pnpm install && npx rbxtsc && rojo build default.project.json --output UILabs.rbxm
+cp UILabs.rbxm ~/cloud/me/roblox/studio/plugins/UILabs.rbxm
+```
+
+### Capturing Screenshots
+
+Use `mcp__RobloxStudio__screen_capture` with a `capture_id` parameter (e.g.,
+`"ScreenCapture_1"`) to capture the current Studio viewport. This returns an image you can
+view directly. Use it to verify UI components, plugin widgets, and visual changes.
+
+To screenshot a specific UI Labs story with the dotted background:
+
+1. Mount the story: `shared.UILabs.mountStory("StoryName")`
+2. Get the holder: `shared.UILabs.getStoryHolder("StoryName")`
+3. Clone the content into a ScreenGui in CoreGui with the UI Labs background:
+   - Base color: `Color3.fromRGB(19, 20, 20)` (solid Frame)
+   - Pattern: `rbxassetid://106415912242239` (ImageLabel, Tile, 40x40, 0.95 transparency)
+4. Capture with `mcp__RobloxStudio__screen_capture`
+5. Destroy the ScreenGui
+
+### Other Useful Tools
+
+- `mcp__RobloxStudio__list_roblox_studios` - List connected Studio instances
+- `mcp__RobloxStudio__set_active_studio` - Switch active Studio instance
+- `mcp__RobloxStudio__search_game_tree` - Search the Explorer tree
+- `mcp__RobloxStudio__inspect_instance` - Inspect instance properties
+- `mcp__RobloxStudio__script_read` - Read a script's source
+- `mcp__RobloxStudio__script_grep` - Search across scripts
+- `mcp__RobloxStudio__execute_luau` - Run Luau code in Studio
+- `mcp__RobloxStudio__get_console_output` - Read the output console
+
+These tools are deferred — use `ToolSearch` to fetch their schemas before calling them.
+
+### Reading Studio Output
+
+The `get_console_output` tool often returns empty. If it does, use `execute_luau` with
+LogService to read the output history directly:
+
+```luau
+local LogService = game:GetService("LogService")
+local history = LogService:GetLogHistory()
+local results = {}
+for i = math.max(1, #history - 50), #history do
+    local entry = history[i]
+    if entry then
+        table.insert(results, `[{entry.messageType}] {entry.message}`)
+    end
+end
+if #results == 0 then
+    return "No log entries found."
+end
+return table.concat(results, "\n")
+```
 
 ## Custom Slash Commands
 
