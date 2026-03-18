@@ -368,15 +368,23 @@ Use `mcp__RobloxStudio__screen_capture` with a `capture_id` parameter (e.g.,
 `"ScreenCapture_1"`) to capture the current Studio viewport. This returns an image you can
 view directly. Use it to verify UI components, plugin widgets, and visual changes.
 
-To screenshot a specific UI Labs story with the dotted background:
+To screenshot a UI Labs story, use `renderStory` then capture:
 
-1. Mount the story: `shared.UILabs.mountStory("StoryName")`
-2. Get the holder: `shared.UILabs.getStoryHolder("StoryName")`
-3. Clone the content into a ScreenGui in CoreGui with the UI Labs background:
-   - Base color: `Color3.fromRGB(19, 20, 20)` (solid Frame)
-   - Pattern: `rbxassetid://106415912242239` (ImageLabel, Tile, 40x40, 0.95 transparency)
-4. Capture with `mcp__RobloxStudio__screen_capture`
-5. Destroy the ScreenGui
+```luau
+-- Renders story into CoreGui with dotted background (auto-cleans
+-- after 30s via Debris)
+shared.UILabs.renderStory("SetKeyPrompt")
+-- Optional: pass width, height overrides
+shared.UILabs.renderStory("SetKeyPrompt", 400, 350)
+```
+
+Then call `mcp__RobloxStudio__screen_capture` to capture the viewport. The render
+auto-destroys after 30 seconds, or you can manually remove it:
+
+```luau
+local gui = game:GetService("CoreGui"):FindFirstChild("UILabsRender")
+if gui then gui:Destroy() end
+```
 
 ### Other Useful Tools
 
