@@ -355,12 +355,9 @@ shared.UILabs.unmountStory("SetKeyPrompt")
 UI Labs must be open in Studio for the API to be available. The stories are
 discovered from Rojo serve sessions (e.g., `rojo serve storybook.project.json`).
 
-To rebuild and install the fork:
-```bash
-cd ~/git/ui-labs
-pnpm install && npx rbxtsc && rojo build default.project.json --output UILabs.rbxm
-cp UILabs.rbxm ~/cloud/me/roblox/studio/plugins/UILabs.rbxm
-```
+To rebuild and install the fork, run `pnpm install && npx rbxtsc && rojo build
+default.project.json --output UILabs.rbxm` from the ui-labs repo, then copy
+`UILabs.rbxm` to the Studio plugins folder.
 
 ### Rojo Shared API
 
@@ -405,12 +402,8 @@ shared.Rojo.clearKnownProjects()
 The API is only available in edit mode (not during play tests). It registers
 automatically when the plugin loads and cleans up on unload.
 
-To rebuild and install the fork:
-```bash
-cd ~/git/rojo
-rojo build plugin.project.json --output Rojo.rbxm
-cp Rojo.rbxm ~/cloud/me/roblox/studio/plugins/Rojo.rbxm
-```
+To rebuild and install the fork, run `rojo build plugin.project.json --output Rojo.rbxm`
+from the rojo repo, then copy `Rojo.rbxm` to the Studio plugins folder.
 
 **Important:** Rojo projects that need the shared API to work must have HTTP
 enabled. Add this to the project JSON:
