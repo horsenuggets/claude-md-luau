@@ -330,7 +330,7 @@ game tree, reading scripts, and more.
 
 ### UI Labs Shared API
 
-The fork of UI Labs at `~/git/ui-labs` (branch `feature/shared-api`) exposes a
+The fork of UI Labs (branch `feature/shared-api`) exposes a
 `shared.UILabs` API that allows programmatic story management from `execute_luau`:
 
 ```luau
@@ -361,7 +361,7 @@ default.project.json --output UILabs.rbxm` from the ui-labs repo, then copy
 
 ### Rojo Shared API
 
-The fork of Rojo at `~/git/rojo` exposes a `shared.Rojo` API that allows programmatic
+The fork of Rojo exposes a `shared.Rojo` API that allows programmatic
 plugin control from `execute_luau`. This is essential for automated workflows — it
 eliminates the need to manually click Connect/Accept in the Rojo plugin UI.
 
