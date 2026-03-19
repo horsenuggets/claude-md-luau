@@ -330,7 +330,7 @@ game tree, reading scripts, and more.
 
 ### UI Labs Shared API
 
-The fork of UI Labs (branch `feature/shared-api`) exposes a
+The fork of UI Labs exposes a
 `shared.UILabs` API that allows programmatic story management from `execute_luau`:
 
 ```luau
