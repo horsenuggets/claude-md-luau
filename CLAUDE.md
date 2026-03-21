@@ -10,6 +10,10 @@ These guidelines supplement the general Claude Code guidelines from
 - Prefer double quotes over single quotes
 - Multi-line strings using `[[...]]` should be indented with the rest of the code, even if this adds leading whitespace to the string content
 
+### Requires
+
+Always use require-by-string (e.g., `require("@packages/Fusion")`, `require("@self/Module")`, `require("./Sibling")`) instead of instance-based requires (e.g., `require(script.Parent.Module)`). Require-by-string is superior in every way.
+
 ## Luau File Headers
 
 Every Luau file should have this at the top:
@@ -155,7 +159,18 @@ from `gitRepoUrl`.
 
 ## Functions
 
-- Always add runtime typechecking to function parameters using assert
+- Always add runtime typechecking to function parameters using the `t` library
+  (if it's a project dependency) with `assert(t.type(param))`. For projects
+  without `t`, use `assert(type(param) == "string")` style checks instead.
+- Add `t` checks to all public API functions and key internal functions that
+  accept parameters from external callers
+- Use `t.interface()` for validating table/config parameters with known shapes
+- Use `t.optional()` for nullable parameters
+- Use `t.array()` for array parameters with element type validation
+- Use Roblox-specific type checkers for Roblox datatypes: `t.Font`, `t.Color3`,
+  `t.Instance`, `t.Vector3`, `t.UDim2`, `t.CFrame`, `t.Enum`, `t.EnumItem`,
+  etc. Do NOT use `t.table` or `t.any` for these — they are userdata, not tables
+- Keep `t` checks at the top of functions, before any logic
 
 ## Configuration Files
 
@@ -224,6 +239,12 @@ directory (where the module would be imported from), not the directory containin
 
 - Constants (like `local THIS_IS_A_CONSTANT`) should be placed above the module definition
   (like `local MyModule = {}`)
+
+## Knowledge Reference
+
+The `knowledge/` directory contains reference data for Roblox/Luau development:
+
+- `knowledge/roblox-fonts.md` - Complete list of all Roblox fonts with asset IDs
 
 ## Lune Documentation
 
@@ -359,6 +380,21 @@ To rebuild and install the fork, run `pnpm install && npx rbxtsc && rojo build
 default.project.json --output UILabs.rbxm` from the ui-labs repo, then copy
 `UILabs.rbxm` to the Studio plugins folder.
 
+### Restarting Plugins
+
+Studio watches the plugins folder and automatically reloads plugins when files
+change. To restart a plugin programmatically, move the `.rbxm` file out of the
+plugins folder and back in:
+
+```bash
+mv ~/cloud/me/roblox/studio/plugins/UILabs.rbxm /tmp/UILabs.rbxm
+sleep 2
+mv /tmp/UILabs.rbxm ~/cloud/me/roblox/studio/plugins/UILabs.rbxm
+```
+
+This works for any plugin — Rojo, UI Labs, etc. The 2-second delay ensures
+Studio detects the removal before the file reappears.
+
 ### Rojo Shared API
 
 The fork of Rojo exposes a `shared.Rojo` API that allows programmatic
@@ -452,6 +488,16 @@ if gui then gui:Destroy() end
 - `mcp__RobloxStudio__get_console_output` - Read the output console
 
 These tools are deferred — use `ToolSearch` to fetch their schemas before calling them.
+
+### Clearing Studio Output
+
+Use `LogService:ClearOutput()` to clear the output log before checking for new
+errors. This avoids confusion from stale log entries:
+
+```luau
+local LogService = game:GetService("LogService")
+LogService:ClearOutput()
+```
 
 ### Reading Studio Output
 

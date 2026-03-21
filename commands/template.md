@@ -27,7 +27,7 @@ Update the current repository's layout and environment to match EXACTLY how it a
 project structure should be identical to the template - only the actual source code (the
 package implementation) should differ.
 
-1. Generate git-style diffs between the template and current repo for these files/directories:
+1. Generate Git-style diffs between the template and current repo for these files/directories:
    - `.editorconfig`
    - `.gitattributes`
    - `.gitignore`
