@@ -3,6 +3,14 @@
 These guidelines supplement the general Claude Code guidelines from
 [claude-md](https://github.com/horsenuggets/claude-md). Always follow both sets of guidelines.
 
+## Terminology
+
+- Always use "Luau" (not "Lua") when referring to the Roblox programming language
+- "Roblox Luau", never "Roblox Lua"
+- Use ````luau` for markdown code block syntax hints, never ````lua`
+- "Luau code", "Luau file", "Luau script", "Luau module", "Luau runtime"
+- The only exception is `.lua` file extensions and tool names like `stylua`
+
 ## Formatting
 
 - Run `stylua .` often to ensure that Luau code is formatted properly
@@ -120,7 +128,7 @@ regular `--[[`).
 
     Description of the class.
 
-    ```lua
+    ```luau
     -- Example usage code
     ```
 ]=]
