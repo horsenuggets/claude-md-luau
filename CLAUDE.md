@@ -3,6 +3,14 @@
 These guidelines supplement the general Claude Code guidelines from
 [claude-md](https://github.com/horsenuggets/claude-md). Always follow both sets of guidelines.
 
+## Terminology
+
+- Always use "Luau" (not "Lua") when referring to the Roblox programming language
+- "Roblox Luau", never "Roblox Lua"
+- Use ````luau` for markdown code block syntax hints, never ````lua`
+- "Luau code", "Luau file", "Luau script", "Luau module", "Luau runtime"
+- The only exception is `.lua` file extensions and tool names like `stylua`
+
 ## Formatting
 
 - Run `stylua .` often to ensure that Luau code is formatted properly
@@ -120,7 +128,7 @@ regular `--[[`).
 
     Description of the class.
 
-    ```lua
+    ```luau
     -- Example usage code
     ```
 ]=]
@@ -184,6 +192,14 @@ module.
 
 - For TestEZ-style tests, do not wrap everything in a describe block with just the file name
 - The file name is already used as the test name, so a wrapping describe block is redundant
+
+## Code Reuse
+
+- Never duplicate function definitions across files. If the same logic is needed in
+  multiple places (e.g., a script and a command, or a command and a demo), extract it into
+  a shared helper module and import it everywhere. This applies to utility functions,
+  formatting logic, rendering code, color calculations, etc.
+- Scripts in `Scripts/` should import from `Source/` helpers, not copy their implementations.
 
 ## Module Structure and @self
 
