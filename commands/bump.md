@@ -22,11 +22,17 @@ Bump a dependency to its latest released version.
    - Only update the specific dependency, not others
    - Preserve the file format exactly
 
-4. After updating, run `rokit install` to install the new version locally.
+4. **Lune-specific: update `.luaurc` typedef path.** When bumping `lune` (specifically
+   `horsenuggets/lune`), also update the lune alias in `.luaurc` to match the new version.
+   The alias follows the format `"lune": "~/.lune/.typedefs/<version>/"`. CI checks validate
+   that this path matches the version in `rokit.toml`, so they must stay in sync. Only update
+   the root `.luaurc`, not ones inside `Submodules/`.
 
-5. If the tool was updated, verify the new version with `<tool> --version`.
+5. After updating, run `rokit install` to install the new version locally.
 
-6. Do NOT commit unless the user explicitly includes `/commit` or `/push` in their request.
+6. If the tool was updated, verify the new version with `<tool> --version`.
+
+7. Do NOT commit unless the user explicitly includes `/commit` or `/push` in their request.
 
 ## When used with /all
 
@@ -35,8 +41,10 @@ When invoked as `/all /bump <tool>`, this bumps the specified dependency across 
 
 1. Find all `rokit.toml` and/or `wally.toml` files that reference the old version
 2. Update them all to the latest version
-3. Commit each change in its respective repo
-4. Report a summary of which repos were updated
+3. For lune bumps, also update the `.luaurc` lune alias in each repo (see step 4 above)
+4. Commit each change in its respective repo (include both `rokit.toml` and `.luaurc` in the
+   commit when both were changed)
+5. Report a summary of which repos were updated
 
 ## Arguments
 
