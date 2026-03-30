@@ -71,6 +71,21 @@ Executable Lune scripts in `Scripts/` must have the executable bit set and start
 shebang line (`#!/usr/bin/env -S lune run`). Always run them directly (e.g.,
 `./Scripts/RunTests.luau`) instead of using `lune run`.
 
+### Windows Setup
+
+On Windows, there is no shebang support. To make `./Scripts/Foo.luau` work in PowerShell,
+register a file association for `.luau` files. Run this once in an elevated PowerShell
+session:
+
+```powershell
+cmd /c 'assoc .luau=LuauScript'
+cmd /c 'ftype LuauScript=lune run "%1" %*'
+```
+
+This tells Windows to run `.luau` files through `lune run`, equivalent to what the shebang
+does on macOS/Linux. After this, `./Scripts/Foo.luau` works in PowerShell the same way it
+does in zsh/bash.
+
 ### Modules
 
 For standard modules (PascalCase file names):
