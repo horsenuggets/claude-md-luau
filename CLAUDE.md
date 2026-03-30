@@ -418,9 +418,9 @@ change. To restart a plugin programmatically, move the `.rbxm` file out of the
 plugins folder and back in:
 
 ```bash
-mv ~/cloud/me/roblox/studio/plugins/UILabs.rbxm /tmp/UILabs.rbxm
+mv <plugins-folder>/UILabs.rbxm /tmp/UILabs.rbxm
 sleep 2
-mv /tmp/UILabs.rbxm ~/cloud/me/roblox/studio/plugins/UILabs.rbxm
+mv /tmp/UILabs.rbxm <plugins-folder>/UILabs.rbxm
 ```
 
 This works for any plugin — Rojo, UI Labs, etc. The 2-second delay ensures
