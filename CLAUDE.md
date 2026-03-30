@@ -198,7 +198,7 @@ from `gitRepoUrl`.
 ## Configuration Files
 
 In `rokit.toml` and `wally.toml`, repository names using the `username/project` format should
-always be lowercase (e.g., `horsenuggets/testable`, not `HorseNuggets/Testable`).
+always be lowercase (e.g., `johnnymorganz/stylua`, not `JohnnyMorganz/StyLua`).
 
 In `.luaurc`, do not add `@self` as an alias. It is already built-in and refers to the current
 module.
