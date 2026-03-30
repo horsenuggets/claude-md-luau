@@ -301,6 +301,10 @@ committing, and especially before pushing. Treat it like running tests. Do not w
 until CI to discover type errors. If a project has `./Scripts/RunStaticAnalysis.luau`,
 use that. Otherwise run `luau-lsp analyze` directly with the appropriate platform flag.
 
+**Warnings are errors.** CI rejects on any diagnostic output, including warnings like
+`ImportUnused` and `LocalUnused`. Fix all warnings before committing — do not leave
+unused imports, unused variables, or any other warnings in the code.
+
 Most projects have both Lune code (scripts in `Scripts/`) and Roblox code (source in
 `Source/`). These require different platforms because they have different globals and type
 definitions.
