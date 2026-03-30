@@ -17,6 +17,8 @@ These guidelines supplement the general Claude Code guidelines from
 - Prefer string interpolation using backticks over the `..` concatenation operator, like `` `Here is a string with an interpolated {value}.` ``
 - Prefer double quotes over single quotes
 - Multi-line strings using `[[...]]` should be indented with the rest of the code, even if this adds leading whitespace to the string content
+- When any key in a table literal requires bracket-quote syntax (e.g., `["or"]` for Luau
+  keywords), use `["key"]` syntax for ALL keys in that table for consistency
 
 ### Requires
 
@@ -294,8 +296,10 @@ You can read Lune documentation as needed to understand the Lune code you're wri
 
 ## Static Analysis with luau-lsp
 
-Use `luau-lsp analyze` to type-check and lint Luau source files. Projects using the
-luau-cicd submodule already have this integrated via `./Scripts/RunStaticAnalysis.luau`.
+**Run `luau-lsp analyze` frequently while working** — after making changes, before
+committing, and especially before pushing. Treat it like running tests. Do not wait
+until CI to discover type errors. If a project has `./Scripts/RunStaticAnalysis.luau`,
+use that. Otherwise run `luau-lsp analyze` directly with the appropriate platform flag.
 
 Most projects have both Lune code (scripts in `Scripts/`) and Roblox code (source in
 `Source/`). These require different platforms because they have different globals and type
