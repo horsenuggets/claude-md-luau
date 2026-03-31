@@ -20,10 +20,10 @@ curl -s -X POST 'https://apis.roblox.com/universes/v1/universes/create' \
   --header "Cookie: .ROBLOSECURITY=$ROBLOX_COOKIE" \
   --header "X-CSRF-TOKEN: $CSRF" \
   --header 'Content-Type: application/json' \
-  --data '{"templatePlaceId": 95206881}'
+  --data '{ "templatePlaceId": 95206881 }'
 ```
 
-Returns: `{"universeId": 123, "rootPlaceId": 456}`
+Returns: `{ "universeId": 123, "rootPlaceId": 456 }`
 
 Template `95206881` is the standard baseplate.
 
@@ -35,10 +35,10 @@ curl -s -X POST \
   --header "Cookie: .ROBLOSECURITY=$ROBLOX_COOKIE" \
   --header "X-CSRF-TOKEN: $CSRF" \
   --header 'Content-Type: application/json' \
-  --data '{"templatePlaceId": 95206881}'
+  --data '{ "templatePlaceId": 95206881 }'
 ```
 
-Returns: `{"placeId": 789}`
+Returns: `{ "placeId": 789 }`
 
 ## Publishing a Place File
 
