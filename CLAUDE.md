@@ -207,6 +207,9 @@ module.
 
 ## Tests
 
+- Always add tests for new behavior, especially when modifying analysis, linting, or
+  type-checking logic. If you add a feature, add a test that verifies it works and a
+  negative test that verifies it doesn't false-trigger.
 - For TestEZ-style tests, do not wrap everything in a describe block with just the file name
 - The file name is already used as the test name, so a wrapping describe block is redundant
 
@@ -278,6 +281,7 @@ directory (where the module would be imported from), not the directory containin
 The `knowledge/` directory contains reference data for Roblox/Luau development:
 
 - `knowledge/roblox-fonts.md` - Complete list of all Roblox fonts with asset IDs
+- `knowledge/roblox-open-cloud-places.md` - Creating, publishing, and testing Roblox places via API
 
 ## Lune Documentation
 
