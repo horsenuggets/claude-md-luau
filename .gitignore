@@ -1,4 +1,7 @@
+# Editor and environment
 .DS_Store
 .local
 .vscode
+
+# Project
 /TODO.md
