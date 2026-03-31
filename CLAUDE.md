@@ -122,6 +122,41 @@ export type Class = {
 }
 ```
 
+### Table Keys and Type Fields
+
+All keys in dictionary-style table literals and fields in type definitions must use
+PascalCase. This applies to config tables, data structures, return values, and any
+table with named keys:
+
+```luau
+-- GOOD
+export type Config = {
+    ApiKeyEnvName: string?,
+    Assets: string,
+    Creator: CreatorConfig,
+}
+
+local state = {
+    CurrentPhase = "lobby",
+    RoundNumber = 0,
+}
+
+-- BAD
+export type Config = {
+    apiKeyEnvName: string?,
+    assets: string,
+    creator: CreatorConfig,
+}
+
+local state = {
+    currentPhase = "lobby",
+    roundNumber = 0,
+}
+```
+
+The only exception is tables whose keys must match an external API's JSON field names
+(e.g., Open Cloud request/response bodies).
+
 ### Internal/Private Members
 
 Internal methods, functions, and properties start with `_` followed by camelCase. This
